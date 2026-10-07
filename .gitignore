@@ -1,0 +1,58 @@
+# WayShare — write this BEFORE `git init`.
+# A secret committed once stays in history even after it is deleted.
+
+# Confidential project documentation — internal only, never pushed (this repo is public)
+/docs/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local database — never commit application data
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtualenvs (myenv currently lives one level up; covered if the repo root moves)
+myenv/
+venv/
+.venv/
+env/
+
+# Django
+/staticfiles/
+/static_root/
+/media/
+*.log
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Node (if any JS tooling is added)
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-error.log*
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,8 @@
+# WayShare backend — direct dependencies only, pinned. Install with:
+#   pip install -r requirements.txt
+Django==6.1.1
+djangorestframework==3.18.1
+drf-spectacular==0.30.0
+django-environ==0.14.0
+argon2-cffi==25.1.0
+psycopg[binary]==3.3.6
