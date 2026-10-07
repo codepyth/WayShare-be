@@ -76,16 +76,5 @@ python manage.py spectacular --format openapi-json --file openapi.json --validat
 └── .env.example           # every environment variable the project uses
 ```
 
-## Roadmap
-
-- [x] Project setup, environment-based config, DRF + OpenAPI
-- [ ] PostgreSQL via Docker Compose
-- [ ] Full data model with audit logging
-- [ ] Authentication API (register, login, logout, password reset)
-- [ ] Rides: post a trip, request and accept seats, trip completion
-- [ ] Trust and safety: verification, reviews, reporting
-- [ ] Payments
-
----
 
 © 2026 WayShare. All rights reserved.
