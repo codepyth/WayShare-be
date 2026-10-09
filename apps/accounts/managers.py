@@ -16,4 +16,10 @@ class UserManager(BaseUserManager):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
         extra.setdefault("is_adult_confirmed", True)
+
+        if extra.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+
         return self.create_user(email, name, password, **extra)
