@@ -14,6 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
     DJANGO_ALLOWED_HOSTS=(list, []),
+    CORS_ALLOWED_ORIGINS=(list, []),
+    CSRF_TRUSTED_ORIGINS=(list, []),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -22,6 +24,14 @@ environ.Env.read_env(BASE_DIR / ".env")
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DJANGO_DEBUG")
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
+
+# Render sets this automatically to the service's public hostname (e.g. wayshare-api.onrender.com).
+RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Swagger UI at /api/docs/ — on locally, and on the deployed server when API_DOCS_ENABLED=true.
+API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=DEBUG)
 
 
 # Application definition
@@ -37,6 +47,7 @@ INSTALLED_APPS = [
     # Third party
     "rest_framework",
     "drf_spectacular",
+    "corsheaders",
 
     # Apps
     "apps.accounts",
@@ -48,7 +59,9 @@ AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -77,12 +90,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wayshare_backend.wsgi.application'
 
 
-# Database — PostgreSQL via DATABASE_URL. The SQLite fallback is interim, until the local
-# docker compose Postgres exists; no new migrations should be authored against it.
+# Database — PostgreSQL via DATABASE_URL. Locally (DEBUG on) it falls back to SQLite; on a
+# server DATABASE_URL is required, because a server's disk is wiped on every deploy.
 
-DATABASES = {
-    "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-}
+if DEBUG:
+    DATABASES = {"default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")}
+else:
+    DATABASES = {"default": env.db("DATABASE_URL")}
 
 
 # Passwords — Argon2 first. PBKDF2 stays in the list only so existing hashes still verify;
@@ -139,8 +153,36 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images) — collected into STATIC_ROOT and served by WhiteNoise.
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Frontend on another domain — which origins may call the API with the session cookie.
+
+CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+
+
+# Production — only when DEBUG is off (i.e. on Render).
+
+if not DEBUG:
+    # Render handles HTTPS and forwards plain HTTP to Django; this header tells Django the original
+    # request was HTTPS.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+
+    # Cookies only over HTTPS. SameSite=None lets the browser send them from the frontend's domain.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "None"
+    CSRF_COOKIE_SAMESITE = "None"

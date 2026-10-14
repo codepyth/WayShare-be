@@ -9,8 +9,8 @@ urlpatterns = [
     path('api/accounts/', include('apps.accounts.urls')),
 ]
 
-# The schema is committed as openapi.json; the live endpoints are a development convenience.
-if settings.DEBUG:
+# API docs — on locally, and on the server when API_DOCS_ENABLED=true (see settings.py).
+if settings.API_DOCS_ENABLED:
     urlpatterns += [
         path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
         path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="api-docs"),
