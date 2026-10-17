@@ -63,3 +63,8 @@ class UserSerializer(serializers.ModelSerializer):
             'phone_verified_at', 'licence_checked_at', 'id_verified_at',
             'last_login',
         )
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    user        = UserSerializer()
+    csrf_token  = serializers.CharField()
