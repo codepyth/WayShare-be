@@ -166,11 +166,19 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Frontend on another domain — which origins may call the API with the session cookie.
+# Frontend — the Next.js app proxies /api/* to this server, so the browser only ever talks to the
+# frontend's own origin. Django still sees that origin in the Origin header on writes, so it must be
+# trusted for CSRF. CORS is only needed if a browser ever calls this server directly.
 
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+
+
+# Sessions — 14 days, renewed on every request: active users stay logged in, inactive ones expire.
+
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
+SESSION_SAVE_EVERY_REQUEST = True
 
 
 # Production — only when DEBUG is off (i.e. on Render).
@@ -181,8 +189,7 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
 
-    # Cookies only over HTTPS. SameSite=None lets the browser send them from the frontend's domain.
+    # Cookies only over HTTPS. SameSite stays at Django's default (Lax): through the proxy the
+    # cookies are first-party, and Lax also stops other sites sending them with forged requests.
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = "None"
-    CSRF_COOKIE_SAMESITE = "None"

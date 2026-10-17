@@ -42,7 +42,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/UserLogin"
+                                    "$ref": "#/components/schemas/LoginResponse"
                                 }
                             }
                         },
@@ -65,6 +65,31 @@
                 "responses": {
                     "200": {
                         "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/accounts/me/": {
+            "get": {
+                "operationId": "accounts_me_retrieve",
+                "tags": [
+                    "accounts"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -102,7 +127,7 @@
                     {}
                 ],
                 "responses": {
-                    "200": {
+                    "201": {
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -118,6 +143,21 @@
     },
     "components": {
         "schemas": {
+            "LoginResponse": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "csrf_token": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "csrf_token",
+                    "user"
+                ]
+            },
             "Register": {
                 "type": "object",
                 "properties": {
@@ -151,6 +191,57 @@
                     "is_adult_confirmed",
                     "name",
                     "password"
+                ]
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 254
+                    },
+                    "phone": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "driver_enabled": {
+                        "type": "boolean"
+                    },
+                    "phone_verified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "licence_checked_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "id_verified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "last_login": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "id",
+                    "name"
                 ]
             },
             "UserLogin": {
