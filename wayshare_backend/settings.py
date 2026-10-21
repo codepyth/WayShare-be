@@ -165,6 +165,8 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 
 # Frontend — the Next.js app proxies /api/* to this server, so the browser only ever talks to the
 # frontend's own origin. Django still sees that origin in the Origin header on writes, so it must be

@@ -5,6 +5,51 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/accounts/change-password/": {
+            "post": {
+                "operationId": "accounts_change_password_create",
+                "tags": [
+                    "accounts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePassword"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePassword"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePassword"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/accounts/login/": {
             "post": {
                 "operationId": "accounts_login_create",
@@ -143,6 +188,23 @@
     },
     "components": {
         "schemas": {
+            "ChangePassword": {
+                "type": "object",
+                "properties": {
+                    "old_password": {
+                        "type": "string",
+                        "writeOnly": true
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "writeOnly": true
+                    }
+                },
+                "required": [
+                    "new_password",
+                    "old_password"
+                ]
+            },
             "LoginResponse": {
                 "type": "object",
                 "properties": {
@@ -156,6 +218,17 @@
                 "required": [
                     "csrf_token",
                     "user"
+                ]
+            },
+            "Message": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "message"
                 ]
             },
             "Register": {

@@ -1,14 +1,18 @@
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.middleware.csrf import get_token
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import LoginResponseSerializer, RegisterSerializer, UserLoginSerializer, UserSerializer
+from .serializers import (
+    ChangePasswordSerializer, LoginResponseSerializer, MessageSerializer, RegisterSerializer,
+    UserLoginSerializer, UserSerializer,
+)
 
 
 class RegisterAPI(generics.GenericAPIView):
-    permission_classes  = (permissions.AllowAny,)
+    permission_classes  = (AllowAny,)
     serializer_class    = RegisterSerializer
 
     @extend_schema(responses={201: RegisterSerializer})
@@ -20,7 +24,7 @@ class RegisterAPI(generics.GenericAPIView):
 
 
 class LoginAPI(generics.GenericAPIView):
-    permission_classes  = (permissions.AllowAny,)
+    permission_classes  = (AllowAny,)
     serializer_class    = UserLoginSerializer
 
     @extend_schema(responses={200: LoginResponseSerializer})
@@ -36,7 +40,7 @@ class LoginAPI(generics.GenericAPIView):
 
 
 class LogoutAPI(APIView):
-    permission_classes  = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         logout(request)
@@ -44,8 +48,23 @@ class LogoutAPI(APIView):
 
 
 class MeAPI(generics.RetrieveAPIView):
-    permission_classes  = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     serializer_class    = UserSerializer
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordView(generics.GenericAPIView):
+    permission_classes  = (IsAuthenticated,)
+    serializer_class    = ChangePasswordSerializer
+
+    @extend_schema(responses={200: MessageSerializer})
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        update_session_auth_hash(request, user)
+        return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
