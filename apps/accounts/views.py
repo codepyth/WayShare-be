@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import (
-    ChangePasswordSerializer, LoginResponseSerializer, MessageSerializer, RegisterSerializer,
+    ChangePasswordSerializer, LoginResponseSerializer, MessageSerializer,
+    PasswordResetConfirmSerializer, PasswordResetSerializer, RegisterSerializer,
     UserLoginSerializer, UserSerializer,
 )
+from .throttles import PasswordResetConfirmThrottle, PasswordResetThrottle
 
 
 class RegisterAPI(generics.GenericAPIView):
@@ -42,6 +44,7 @@ class LoginAPI(generics.GenericAPIView):
 class LogoutAPI(APIView):
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(request=None, responses={200: MessageSerializer})
     def post(self, request, *args, **kwargs):
         logout(request)
         return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
@@ -68,3 +71,33 @@ class ChangePasswordView(generics.GenericAPIView):
         user.save()
         update_session_auth_hash(request, user)
         return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
+
+class PasswordResetView(generics.GenericAPIView):
+    permission_classes  = (AllowAny,)
+    serializer_class    = PasswordResetSerializer
+    throttle_classes    = (PasswordResetThrottle,)
+
+    @extend_schema(responses={200: MessageSerializer})
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # Same answer whether or not the account exists, so this can't reveal who is registered.
+        return Response(
+            {'message': "If an account exists for that email, we've sent a link. It expires in 1 hour."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    permission_classes  = (AllowAny,)
+    serializer_class    = PasswordResetConfirmSerializer
+    throttle_classes    = (PasswordResetConfirmThrottle,)
+
+    @extend_schema(responses={200: MessageSerializer})
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Password reset. Log in with your new password.'}, status=status.HTTP_200_OK)

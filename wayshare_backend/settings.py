@@ -133,6 +133,11 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Used only by views that set throttle_classes (see apps/accounts/throttles.py).
+    "DEFAULT_THROTTLE_RATES": {
+        "password_reset":           "5/hour",
+        "password_reset_confirm":   "10/hour",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -165,7 +170,21 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Email — Gmail SMTP when EMAIL_USER / EMAIL_PASSWORD are set (EMAIL_PASSWORD is a Google App
+# Password, not the account password); otherwise emails are printed to the console.
+EMAIL_HOST          = "smtp.gmail.com"
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = env("EMAIL_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD", default="")
+EMAIL_TIMEOUT       = 10
+EMAIL_BACKEND       = (
+    "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST_USER
+    else "django.core.mail.backends.console.EmailBackend"
+)
+# Gmail sends as the logged-in account whatever From says, so From uses that address.
+DEFAULT_FROM_EMAIL  = f"WayShare <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "WayShare <no-reply@localhost>"
+
 
 
 # Frontend — the Next.js app proxies /api/* to this server, so the browser only ever talks to the
@@ -182,6 +201,9 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 SESSION_SAVE_EVERY_REQUEST = True
 
+# Password reset links expire after 1 hour (Django's default is 3 days) and point to the frontend.
+PASSWORD_RESET_TIMEOUT = 3600
+FRONTEND_URL = (env("FRONTEND_URL", default="") or "http://localhost:3000").rstrip("/")
 
 # Production — only when DEBUG is off (i.e. on Render).
 
