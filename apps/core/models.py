@@ -1,4 +1,4 @@
-# apps/base_models.py
+# apps/core/models.py — shared models used by every app.
 import uuid
 from django.db import models
 

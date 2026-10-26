@@ -50,7 +50,9 @@ INSTALLED_APPS = [
     "corsheaders",
 
     # Apps
+    "apps.core",
     "apps.accounts",
+    "apps.rides",
 ]
 
 
