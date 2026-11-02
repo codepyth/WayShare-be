@@ -14,7 +14,3 @@ def gen_trip_reference():
 
 def gen_booking_reference():
     return generate_reference("BK")
-
-
-print(gen_booking_reference())
-print(gen_trip_reference())
