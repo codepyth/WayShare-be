@@ -24,7 +24,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         value = value.lower()
-        if User.objects.filter(email=value).exists():
+        # all_objects: a soft-deleted account still owns its email until it is anonymised.
+        if User.all_objects.filter(email=value).exists():
             raise serializers.ValidationError("An account with this email already exists.")
         return value
 

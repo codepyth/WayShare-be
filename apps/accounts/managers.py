@@ -1,8 +1,13 @@
 # apps/accounts/managers.py
 from django.contrib.auth.base_user import BaseUserManager
+from apps.core.models import SoftDeleteQuerySet
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager.from_queryset(SoftDeleteQuerySet)):
+    # Hides soft-deleted users, so they can't log in, and their open sessions stop working.
+    def get_queryset(self):
+        return super().get_queryset().alive()
+
     def create_user(self, email, name, password=None, **extra):
         if not email:
             raise ValueError("Users must have an email address")
