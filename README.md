@@ -69,8 +69,12 @@ python manage.py spectacular --format openapi-json --file openapi.json --validat
 
 ```text
 ├── apps/
-│   └── accounts/          # custom User model (email login, UUID PK)
+│   ├── core/              # shared BaseModel (UUID id, timestamps, soft delete) and helpers
+│   ├── accounts/          # custom User model (email login) and the auth API
+│   └── rides/             # cities, pickup points, routes; trips and bookings next
 ├── wayshare_backend/      # settings, URLs, WSGI/ASGI
+├── .github/workflows/     # CI: checks, migrations, OpenAPI contract
+├── build.sh               # Render build: install, collectstatic, migrate
 ├── openapi.json           # generated API contract
 ├── requirements.txt
 └── .env.example           # every environment variable the project uses
