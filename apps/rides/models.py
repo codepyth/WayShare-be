@@ -2,16 +2,23 @@ from django.db import models
 from django.db.models import F, Q
 from apps.core.models import BaseModel
 
+# Uniqueness counts live rows only, so a soft-deleted city or route can be created again.
+ALIVE = Q(deleted_at__isnull=True)
+
 
 class City(BaseModel):
-    name        = models.CharField(max_length=100, unique=True)
-    slug        = models.SlugField(max_length=100, unique=True)
+    name        = models.CharField(max_length=100)
+    slug        = models.SlugField(max_length=100)
     is_active   = models.BooleanField(default=True)
 
     class Meta:
         db_table            = "cities"
         verbose_name_plural = "cities"
         ordering            = ("name",)
+        constraints         = (
+            models.UniqueConstraint(fields=("name",), condition=ALIVE, name="unique_city_name"),
+            models.UniqueConstraint(fields=("slug",), condition=ALIVE, name="unique_city_slug"),
+        )
 
     def __str__(self):
         return self.name
@@ -28,7 +35,7 @@ class PickupPoint(BaseModel):
         db_table    = "pickup_points"
         ordering    = ("city__name", "name")
         constraints = (
-            models.UniqueConstraint(fields=("city", "name"), name="unique_pickup_point_per_city"),
+            models.UniqueConstraint(fields=("city", "name"), condition=ALIVE, name="unique_pickup_point_per_city"),
         )
 
     def __str__(self):
@@ -44,11 +51,10 @@ class RouteDistance(BaseModel):
         db_table    = "route_distances"
         ordering    = ("origin_city__name", "destination_city__name")
         constraints = (
-            models.UniqueConstraint(fields=("origin_city", "destination_city"), name="unique_route"),
+            models.UniqueConstraint(fields=("origin_city", "destination_city"), condition=ALIVE, name="unique_route"),
             models.CheckConstraint(condition=~Q(origin_city=F("destination_city")), name="route_cities_differ"),
             models.CheckConstraint(condition=Q(miles__gt=0), name="route_miles_positive"),
         )
 
     def __str__(self):
         return f"{self.origin_city} → {self.destination_city}: {self.miles} mi"
-    

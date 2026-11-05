@@ -6,6 +6,7 @@ drf-spectacular==0.30.0
 django-environ==0.14.0
 argon2-cffi==25.1.0
 psycopg[binary]==3.3.6
+Pillow==13.0.0
 
 # Production
 gunicorn==26.2.0
