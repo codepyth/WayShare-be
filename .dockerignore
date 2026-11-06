@@ -1,6 +1,8 @@
 myenv/
-venv/
+.venv/
+.git/
 __pycache__/
 *.pyc
-.git/
 .env
+db.sqlite3
+~$*
