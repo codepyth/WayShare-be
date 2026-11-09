@@ -1,0 +1,26 @@
+# WayShare API for local development.
+#   docker compose up --build      → API on http://localhost:8000, Swagger at /api/docs/
+# Local-only values below: nothing here is a real secret, and this setup is never a public server.
+
+services:
+  api:
+    build: .
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: local-docker-only-not-a-secret
+      DJANGO_DEBUG: "true"
+      # host.docker.internal: a frontend running in its own container reaches the API by this name.
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,host.docker.internal
+      CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      FRONTEND_URL: http://localhost:3000
+      DATABASE_URL: sqlite:////app/data/db.sqlite3
+    volumes:
+      - .:/app                  # code changes reload without a rebuild
+      - db-data:/app/data       # the SQLite database survives restarts and rebuilds
+      - media:/app/media        # uploaded photos
+
+volumes:
+  db-data:
+  media:
