@@ -14,6 +14,7 @@
 # Local database — never commit application data
 db.sqlite3
 db.sqlite3-journal
+/data/
 *.sqlite3
 
 # Python
