@@ -29,3 +29,26 @@ class ParcelStatus(models.TextChoices):
     IN_TRANSIT = "in_transit", "In Transit"
     DELIVERED = "delivered", "Delivered"
     CONFIRMED = "confirmed", "Confirmed"
+
+class BookingKind(models.TextChoices):
+    SEAT = "seat", "Seat"
+    PARCEL = "parcel", "Parcel"
+
+
+class BootSize(models.TextChoices):
+    SMALL = "small", "Small"
+    MEDIUM = "medium", "Medium"
+    LARGE = "large", "Large"
+
+
+class Chattiness(models.TextChoices):
+    QUIET = "quiet", "Quiet"
+    DEPENDS = "depends", "Depends on my mood"
+    CHATTY = "chatty", "Chatty"
+
+
+# Cost-share cap (D22): fare per seat <= (distance_miles x MILEAGE_RATE_PENCE) / (seats_total + 1).
+# 55p is HMRC's approved mileage rate. Each trip stores the rate and version it was priced with.
+MILEAGE_RATE_PENCE  = 55
+CAP_FORMULA_VERSION = "2026-1"
+MAX_SEATS           = 8
